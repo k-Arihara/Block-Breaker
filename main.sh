@@ -14,7 +14,7 @@ FIELD="
 FIELD_WIDTH=33
 FIELD_HEIGHT=9
 X=3
-Y=3
+Y=2
 VX=1
 VY=1
 
@@ -44,8 +44,21 @@ while :; do
 
   NEXT_X_C=$(echo "$FIELD" | sed -e ':loop' -e 'N; $!b loop' -e 's/\n//g' | cut -c $((((Y-1)*FIELD_WIDTH)+X+VX)))
   NEXT_Y_C=$(echo "$FIELD" | sed -e ':loop' -e 'N; $!b loop' -e 's/\n//g' | cut -c $(((Y+VY-1)*FIELD_WIDTH+X)))
+  NEXT_XY_C=$(echo "$FIELD" | sed -e ':loop' -e 'N; $!b loop' -e 's/\n//g' | cut -c $(((Y+VY-1)*FIELD_WIDTH+X+VX)))
   printf '%s %s' "$NEXT_X_C" "$NEXT_Y_C"
   # printf "XY:$((Y*FIELD_WIDTH+X)), X+VX:$(((Y*FIELD_WIDTH)+X+VX))), Y+VY:$(((Y+VY)*FIELD_WIDTH+X)))"
+
+  if [ "$NEXT_X_C" = '#' ] || [ "$NEXT_X_C" = '@' ] || [ "$NEXT_Y_C" = '#' ] || [ "$NEXT_Y_C" = '@' ]; then
+    if [ "$NEXT_X_C" = '#' ] || [ "$NEXT_X_C" = '@' ]; then
+      VX=$((VX*-1))
+    fi
+    if [ "$NEXT_Y_C" = '#' ] || [ "$NEXT_Y_C" = '@' ]; then
+      VY=$((VY*-1))
+    fi
+  elif [ "$NEXT_XY_C" = '#' ] || [ "$NEXT_XY_C" = '@' ];then
+    VX=$((VX*-1))
+    VY=$((VY*-1))
+  fi
 
   printf "$FIELD"
   printf "\033[$((${FIELD_HEIGHT}-2))B\033[${pos}C-\033[$((${FIELD_HEIGHT}-2))A\r"
@@ -61,5 +74,5 @@ while :; do
   #     printf " "
   #   fi
   # done
-  sleep 1
+  # sleep 0.25
 done
