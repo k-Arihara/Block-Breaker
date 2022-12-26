@@ -1,15 +1,32 @@
 #!/bin/bash
 
 # Environment Value
+# FIELD="
+# #####################################
+# #                                   #
+# #                                   #
+# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+# #                                   #
+# #                                   #
+# #                                   #
+# #                                   #
+# #                                   #
+# #                                   #
+# #####################################"
+
 FIELD="
 #####################################
 #                                   #
 #                                   #
-#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+#                                   #
+#                                   #
+#                                   #
+#                @                  #
+#                                   #
 #                                   #
 #                                   #
 #                                   #
@@ -87,6 +104,7 @@ while :; do
 
   ball_xy=$((Y*FIELD_WIDTH+X)) || true
   FIELD_TMP=""
+  atmark_count=0
   for i in $(seq 0 "${#FIELD_WITHOUT_CRLF}"); do
     if [ $(("$i" % FIELD_WIDTH)) = 0 ]; then
       FIELD_TMP="$FIELD_TMP\n"
@@ -95,14 +113,62 @@ while :; do
       FIELD_TMP="${FIELD_TMP}o"
     else
       FIELD_TMP="${FIELD_TMP}${FIELD_ARR[$i]}"
+      if [ "${FIELD_ARR[$i]}" = "@" ];then
+        ((atmark_count++))
+      fi
     fi
   done
   printf "$FIELD_TMP\033[${FIELD_HEIGHT}A\r"
 
+  if [ $atmark_count = 0 ];then
+    break
+  fi
+
   # FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]=" "
   FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]=" "
+
+  if [ $Y -gt $((FIELD_HEIGHT - 4)) ];then
+    break
+  fi
 
   X=$((X + VX))
   Y=$((Y + VY))
   # sleep 0.1
 done
+
+flash_display() {
+  FLASH=""
+  for i in $(seq 0 "${#FIELD_WITHOUT_CRLF}"); do
+    if [ $(("$i" % FIELD_WIDTH)) = 0 ]; then
+      FLASH="$FLASH\n"
+    fi
+    FLASH="$FLASH "
+  done
+  printf "$FLASH\033[${FIELD_HEIGHT}A\r"
+}
+
+GAME_OVER="
+              ■                       
+   ■■■■■     ■■    ■■     ■■■  ■■■■■■ 
+  ■■   ■     ■■    ■■■    ■■■  ■      
+ ■■         ■■ ■   ■■■    ■■■  ■      
+ ■          ■  ■   ■ ■   ■■■■  ■      
+ ■    ■■■   ■  ■■  ■  ■  ■ ■■  ■■■■■■ 
+ ■      ■  ■■■■■■  ■  ■  ■ ■■  ■      
+ ■■     ■  ■    ■  ■  ■■■  ■■  ■      
+  ■■   ■■ ■■    ■■ ■   ■■  ■■  ■      
+   ■■■■■  ■      ■ ■   ■   ■■  ■■■■■■ 
+                                      
+   ■■■■   ■■     ■ ■■■■■■  ■■■■■      
+  ■■   ■■  ■    ■■ ■       ■    ■     
+ ■■     ■  ■    ■  ■       ■    ■■    
+ ■      ■■ ■■   ■  ■       ■    ■     
+ ■      ■■  ■  ■■  ■■■■■■  ■■■■■      
+ ■      ■■  ■  ■   ■       ■   ■      
+ ■■     ■   ■■ ■   ■       ■    ■     
+  ■■   ■■    ■■    ■       ■    ■■    
+   ■■■■      ■■    ■■■■■■  ■     ■
+  "
+
+flash_display
+printf "$GAME_OVER"
