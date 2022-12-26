@@ -1,32 +1,15 @@
 #!/bin/bash
 
 # Environment Value
-# FIELD="
-# #####################################
-# #                                   #
-# #                                   #
-# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-# #    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
-# #                                   #
-# #                                   #
-# #                                   #
-# #                                   #
-# #                                   #
-# #                                   #
-# #####################################"
-
 FIELD="
 #####################################
 #                                   #
 #                                   #
-#                                   #
-#                                   #
-#                                   #
-#                @                  #
-#                                   #
+#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
+#    @@@@@@@@@@@@@@@@@@@@@@@@@@@    #
 #                                   #
 #                                   #
 #                                   #
@@ -74,8 +57,11 @@ while :; do
   esac
   printf "$c\r"
   
-  # FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]="-"
-  FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]="-"
+  if [ "$1" = "cheat" ];then
+    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]="-"
+  else
+    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]="-"
+  fi
 
   NEXT_X_C=${FIELD_ARR[$(((Y * FIELD_WIDTH) + X + VX))]}
   NEXT_Y_C=${FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X))]}
@@ -125,8 +111,11 @@ while :; do
     break
   fi
 
-  # FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]=" "
-  FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]=" "
+  if [ "$1" = "cheat" ];then
+    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]=" "
+  else
+    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]=" "
+  fi
 
   if [ $Y -gt $((FIELD_HEIGHT - 4)) ];then
     break
