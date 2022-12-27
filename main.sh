@@ -16,14 +16,20 @@ FIELD="
 #                                   #
 #                                   #
 #                                   #
+#                                   #
+#                                   #
+#                                   #
+#                                   #
+#                                   #
+#                                   #
 #####################################"
 
 FIELD_WIDTH=37
-FIELD_HEIGHT=16
-X=3
-Y=2
+FIELD_HEIGHT=22
+X=$(( "RANDOM" % ("FIELD_WIDTH" - 2)+1 ))
+Y=10
 VX=1
-VY=1
+VY=-1
 
 # Define Function
 getch() {
@@ -40,7 +46,7 @@ for i in $(seq "${#FIELD_WITHOUT_CRLF}"); do
   FIELD_ARR+=("$elem")
 done
 
-pos=1
+pos=$X
 while :; do
   c=$(getch)
   case ${c} in
@@ -56,74 +62,80 @@ while :; do
   *) ;;
   esac
   printf "$c\r"
-  
-  if [ "$1" = "cheat" ];then
-    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]="-"
+
+  if [ "$1" = "cheat" ]; then
+    FIELD_ARR[$(((FIELD_HEIGHT - 4) * FIELD_WIDTH + $X))]="-"
   else
-    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]="-"
+    FIELD_ARR[$(((FIELD_HEIGHT - 4) * FIELD_WIDTH + pos))]="-"
   fi
 
-  NEXT_X_C=${FIELD_ARR[$(((Y * FIELD_WIDTH) + X + VX))]}
-  NEXT_Y_C=${FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X))]}
-  NEXT_XY_C=${FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X + VX))]}
+  while :; do
+    is_collision=0
+    NEXT_X_C=${FIELD_ARR[$(((Y * FIELD_WIDTH) + X + VX))]}
+    NEXT_Y_C=${FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X))]}
+    NEXT_XY_C=${FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X + VX))]}
 
-  if [[ '#@-' =~ "$NEXT_X_C" ]] || [[ '#@-' =~ "$NEXT_Y_C" ]]; then
-    if [[ '#@-' =~ "$NEXT_X_C" ]]; then
-      if [[ "@" = "$NEXT_X_C" ]]; then
-        FIELD_ARR[$(((Y * FIELD_WIDTH) + X + VX))]=" "
+    if [[ '#@-' =~ "$NEXT_X_C" ]] || [[ '#@-' =~ "$NEXT_Y_C" ]]; then
+      is_collision=1
+      if [[ '#@-' =~ "$NEXT_X_C" ]]; then
+        if [[ "@" = "$NEXT_X_C" ]]; then
+          FIELD_ARR[$(((Y * FIELD_WIDTH) + X + VX))]=" "
+        fi
+        VX=$((VX * -1))
+      fi
+      if [[ '#@-' =~ "$NEXT_Y_C" ]]; then
+        if [[ "@" = "$NEXT_Y_C" ]]; then
+          FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X))]=" "
+        fi
+        VY=$((VY * -1))
+      fi
+    elif [[ '#@-' =~ "$NEXT_XY_C" ]]; then
+      is_collision=1
+      if [[ "@" = "$NEXT_XY_C" ]]; then
+        FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X + VX))]=" "
       fi
       VX=$((VX * -1))
-    fi
-    if [[ '#@-' =~ "$NEXT_Y_C" ]]; then
-      if [[ "@" = "$NEXT_Y_C" ]]; then
-        FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X))]=" "
-      fi
       VY=$((VY * -1))
     fi
-  elif [[ '#@-' =~ "$NEXT_XY_C" ]]; then
-    if [[ "@" = "$NEXT_XY_C" ]]; then
-      FIELD_ARR[$(((Y + VY) * FIELD_WIDTH + X + VX))]=" "
-    fi
-    VX=$((VX * -1))
-    VY=$((VY * -1))
-  fi
+    if [ $is_collision = 0 ];then break; fi
+  done
 
-  ball_xy=$((Y*FIELD_WIDTH+X)) || true
+  ball_xy=$((Y * FIELD_WIDTH + X)) || true
   FIELD_TMP=""
   atmark_count=0
   for i in $(seq 0 "${#FIELD_WITHOUT_CRLF}"); do
     if [ $(("$i" % FIELD_WIDTH)) = 0 ]; then
       FIELD_TMP="$FIELD_TMP\n"
     fi
-    if [ $ball_xy = "$i" ];then
+    if [ $ball_xy = "$i" ]; then
       FIELD_TMP="${FIELD_TMP}o"
     else
       FIELD_TMP="${FIELD_TMP}${FIELD_ARR[$i]}"
-      if [ "${FIELD_ARR[$i]}" = "@" ];then
+      if [ "${FIELD_ARR[$i]}" = "@" ]; then
         ((atmark_count++))
       fi
     fi
   done
   printf "$FIELD_TMP\033[${FIELD_HEIGHT}A\r"
 
-  if [ $atmark_count = 0 ];then
-    CLEAR_FLAG=1
+  if [ $atmark_count = 0 ]; then
+    is_clear=1
     break
   fi
 
-  if [ "$1" = "cheat" ];then
-    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + $X))]=" "
+  if [ "$1" = "cheat" ]; then
+    FIELD_ARR[$(((FIELD_HEIGHT - 4) * FIELD_WIDTH + $X))]=" "
   else
-    FIELD_ARR[$(((FIELD_HEIGHT-4) * FIELD_WIDTH + pos))]=" "
+    FIELD_ARR[$(((FIELD_HEIGHT - 4) * FIELD_WIDTH + pos))]=" "
   fi
 
-  if [ $Y -gt $((FIELD_HEIGHT - 4)) ];then
+  if [ $Y -gt $((FIELD_HEIGHT - 4)) ]; then
     break
   fi
 
   X=$((X + VX))
   Y=$((Y + VY))
-  # sleep 0.1
+  sleep 0.1
 done
 
 flash_display() {
@@ -187,7 +199,7 @@ GAME_CLEAR="
 "
 
 flash_display
-if [ -v CLEAR_FLAG ];then
+if [ -v is_clear ]; then
   printf "$GAME_CLEAR"
 else
   printf "$GAME_OVER"
